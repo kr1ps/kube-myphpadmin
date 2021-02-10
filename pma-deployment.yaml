@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpmyadmin-deploy
+  labels:
+    name: phpmyadmin-deploy
+    app: phpmyadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpmyadmin
+      name: phpmyadmin-pod
+
+  template:
+    metadata:
+      name: phpmyadmin-pod
+      labels:
+        app: phpmyadmin
+        name: phpmyadmin-pod
+    spec:
+      containers:
+        - name: phpmyadmin
+          image: phpmyadmin/phpmyadmin
+          ports:
+            - containerPort: 80
+          env:
+            - name: PMA_ARBITRARY
+              value: "1"
+          volumeMounts:
+            - name: phpmyadmin-data
+              mountPath: /sessions
+            - name: config-volume
+              mountPath: /etc/apache2/apache2.conf
+              subPath: apache2.conf
+      volumes:
+      - name: config-volume
+        configMap:
+          name: pma-config
+      - name: phpmyadmin-data
+        persistentVolumeClaim:
+          claimName: phpmyadmin-pv-claim 
